@@ -1,0 +1,41 @@
+variables:
+  PROJECT_NAME: be-service-saksi-management
+  REPO_NAME: repo.mncinnovation.id/perindo/saksi/service-saksi-management.git
+  GIT_SUBMODULE_STRATEGY: recursive
+stages:
+  - build
+  - deploy
+build:
+  stage: build
+  cache:
+    key: ${PROJECT_NAME}
+    paths:
+      - be-service-saksi
+  script:
+    - pwd
+    - make build
+    - echo "Built"
+  only:
+    - dev
+  tags:
+    - ssh
+deploy:
+  stage: deploy
+  dependencies:
+    - build
+  cache:
+    key: ${PROJECT_NAME}
+    paths:
+      - be-service-saksi
+  script:
+    - ls -la
+    - cp api-specification/openapi.yaml /var/www/html/swagger-ui/openapi-saksi.yaml
+    - cp db/migration/* /usr/local/etc/${PROJECT_NAME}-migration
+    - systemctl stop ${PROJECT_NAME}
+    - cp be-service-saksi /usr/local/bin/${PROJECT_NAME}
+    - systemctl start ${PROJECT_NAME}
+    - echo "Deployed"
+  only:
+    - dev
+  tags:
+    - ssh

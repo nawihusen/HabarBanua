@@ -1,0 +1,4 @@
+[submodule "api-specification"]
+	path = api-specification
+	url = ../api-spec-service-saksi-management.git
+	branch = master

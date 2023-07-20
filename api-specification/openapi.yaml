@@ -1,0 +1,1551 @@
+openapi: 3.0.0
+info:
+  title: service-saksi-management
+  description: Service Saksi Management
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8555
+    description: Local development server
+  - url: https://dev-api.partaiperindo.com/saksi
+    description: Remote development server
+  - url: https://staging-api-cloud.partaiperindo.com/saksi
+    description: Cloud staging server
+
+tags:
+  - name: Account
+    description: Account management
+  - name: Attendance
+    description: Saksi attendance
+  - name: TPS
+    description: TPS related
+  - name: Document evidence
+    description: Document evidence and compensation
+
+paths:
+  /saksi/validation:
+    get:
+      tags:
+        - Account
+      summary: Get Saksi validation
+      description: Get Saksi validation from DPRT side
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: qr_code
+          in: query
+          required: true
+          description: QR Code
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ResponseSaksiValidation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Account
+      summary: Saksi validation
+      description: Saksi validation
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestCreateSaksiValidation'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ResponseCreateSaksiValidation'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /saksi/validation/{id}:
+    delete:
+      tags:
+        - Account
+      summary: Remove Saksi validation
+      description: Remove/reject Saksi validation request from DPRT side
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Saksi candidate ID
+          schema:
+            type: string 
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /saksi/validation/selfie/{filename}:
+    get:
+      tags:
+        - Account
+      summary: Get Saksi validation selfie photo
+      description: Get Saksi validation selfie photo
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          description: Photo filename, usually with jpg extension
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: Success
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /saksi/validation/ktp/{filename}:
+    get:
+      tags:
+        - Account
+      summary: Get Saksi validation KTP photo
+      description: Get Saksi validation KTP photo
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          description: Photo filename, usually with jpg extension
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: Success
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /saksi:
+    get:
+      tags:
+        - Account
+      summary: Get Saksi list (BACKOFFICE)
+      description: Get Saksi list from backoffice
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Limit
+          schema:
+            type: integer
+        - name: prov_code
+          in: query
+          description: Provinsi code
+          schema:
+            type: integer
+        - name: kab_code
+          in: query
+          description: Kabupaten/kota code
+          schema:
+            type: integer
+        - name: kec_code
+          in: query
+          description: Kecamatan code
+          schema:
+            type: integer
+        - name: kel_code
+          in: query
+          description: Kelurahan code
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          description: Sort by
+          schema:
+            type: string
+            enum:
+              - dtm_crt
+              - dtm_upd
+        - name: order
+          in: query
+          description: Order (ascending or descending)
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:                      
+                      total_data:
+                        type: integer
+                        example: 543
+                      total_page:
+                        type: integer
+                        example: 6
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 100
+                      sort:
+                        type: string
+                        example: id
+                        enum:
+                          - id
+                          - dtm_crt
+                          - dtm_upd
+                      order:
+                        type: string
+                        example: asc
+                        enum:
+                          - asc
+                          - desc
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResponseSaksi'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /dprt:
+    get:
+      tags:
+        - Account
+      summary: Get DPRT list (BACKOFFICE)
+      description: Get DPRT list from backoffice
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Limit
+          schema:
+            type: integer
+        - name: prov_code
+          in: query
+          description: Provinsi code
+          schema:
+            type: integer
+        - name: kab_code
+          in: query
+          description: Kabupaten/kota code
+          schema:
+            type: integer
+        - name: kec_code
+          in: query
+          description: Kecamatan code
+          schema:
+            type: integer
+        - name: kel_code
+          in: query
+          description: Kelurahan code
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          description: Sort by
+          schema:
+            type: string
+            enum:
+              - dtm_crt
+              - dtm_upd
+        - name: order
+          in: query
+          description: Order (ascending or descending)
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:                      
+                      total_data:
+                        type: integer
+                        example: 543
+                      total_page:
+                        type: integer
+                        example: 6
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 100
+                      sort:
+                        type: string
+                        example: id
+                        enum:
+                          - id
+                          - dtm_crt
+                          - dtm_upd
+                      order:
+                        type: string
+                        example: asc
+                        enum:
+                          - asc
+                          - desc
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResponseDPRT'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /saksi/count:
+    get:
+      tags:
+        - Account
+      summary: Get Saksi count (BACKOFFICE) <-- deprecated, use GET /saksi instead
+      description: Get Saksi count from backoffice
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: prov_code
+          in: query
+          description: Provinsi code
+          schema:
+            type: integer
+        - name: kab_code
+          in: query
+          description: Kabupaten/kota code
+          schema:
+            type: integer
+        - name: kec_code
+          in: query
+          description: Kecamatan code
+          schema:
+            type: integer
+        - name: kel_code
+          in: query
+          description: Kelurahan code
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: 2345
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /saksi/dprt:
+    get:
+      tags:
+        - Account
+      summary: Get Saksi list
+      description: Get Saksi list from DPRT side
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResponseSaksiDPRT'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Account
+      summary: Create/approve Saksi
+      description: Create/approve Saksi from DPRT side
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RequestCreateSaksi'
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ResponseCreateSaksi'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /auth:
+    get:
+      tags:
+        - Account
+      summary: Authenticate and authorize token
+      description: Authenticate and authorize token, responded with user ID
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseAuth'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /saksi/attendance:
+    get:
+      tags:
+        - Attendance
+      summary: Get Saksi attendance list
+      description: Get Saksi attendance list from DPRT side
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResponseSaksiAttendance'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Attendance
+      summary: Saksi attendance
+      description: Saksi attendance
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestCreateSaksiAttendance'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /saksi/attendance/{id}:
+    get:
+      tags:
+        - Attendance
+      summary: Get Saksi attendance
+      description: Get Saksi attendance from DPRT side
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Attendance ID
+          schema:
+            type: string 
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResponseSaksiAttendance'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /tps:
+    get:
+      tags:
+        - TPS
+      summary: Get TPS list (BACKOFFICE)
+      description: Get TPS list for backoffice
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Page
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Limit
+          schema:
+            type: integer
+        - name: prov_code
+          in: query
+          description: Provinsi code
+          schema:
+            type: integer
+        - name: kab_code
+          in: query
+          description: Kabupaten/kota code
+          schema:
+            type: integer
+        - name: kec_code
+          in: query
+          description: Kecamatan code
+          schema:
+            type: integer
+        - name: kel_code
+          in: query
+          description: Kelurahan code
+          schema:
+            type: integer
+        - name: sort
+          in: query
+          description: Sort by
+          schema:
+            type: string
+            enum:
+              - tps_no
+              - dtm_crt
+              - dtm_upd
+        - name: order
+          in: query
+          description: Order (ascending or descending)
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:                      
+                      total_data:
+                        type: integer
+                        example: 543
+                      total_page:
+                        type: integer
+                        example: 6
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 100
+                      sort:
+                        type: string
+                        example: id
+                        enum:
+                          - id
+                          - tps_no
+                          - dtm_crt
+                          - dtm_upd
+                      order:
+                        type: string
+                        example: asc
+                        enum:
+                          - asc
+                          - desc
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ResponseTPS'
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - TPS
+      summary: Create TPS (BACKOFFICE)
+      description: Create TPS for backoffice
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestCreateTPS'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /tps/{id}:
+    get:
+      tags:
+        - TPS
+      summary: Get TPS by ID (BACKOFFICE)
+      description: Get TPS by ID for backoffice
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: TPS ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseTPS'
+            application/vnd.openxmlformats-officedocument.spreadsheetml.sheet:
+              schema:
+                type: string
+                format: binary
+
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - TPS
+      summary: Edit TPS (BACKOFFICE)
+      description: Edit TPS for backoffice
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: TPS ID
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestUpdateTPS'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - TPS
+      summary: Delete TPS (BACKOFFICE)
+      description: Delete TPS for backoffice
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: TPS ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /tps/dprt:
+    get:
+      tags:
+        - TPS
+      summary: Get TPS list for DPRT
+      description: Get TPS list for DPRT
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResponseTPSDPRT'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /compensation:
+    get:
+      tags:
+        - Document evidence
+      summary: Get compensation list
+      description: Get document evidence with compensation list
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ResponseCompensation'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /document:
+    post:
+      tags:
+        - Document evidence
+      summary: Upload document evidence
+      description: Upload document evidence
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RequestDocumentEvidence'
+      responses:
+        '200':
+          $ref: '#/components/responses/Success'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+components:
+  schemas:
+    RequestCreateSaksiValidation:
+      type: object
+      properties:
+        selfie_image:
+          type: string
+          format: binary
+          description: Selfie image
+        ktp_image:
+          type: string
+          format: binary
+          description: KTP image
+      required:
+        - selfie_image
+        - ktp_image
+    ResponseCreateSaksiValidation:
+      type: object
+      properties:
+        nik:
+          type: string
+          example: 1234567890123456
+        full_name:
+          type: string
+          example: John Doe
+        phone_number:
+          type: string
+          example: +6281234567890
+        address:
+          type: string
+          example: Jl. Veteran No.10 Krajan Lumajang
+        dprt_coordinator:
+          type: object
+          properties:
+            member_no:
+              type: string
+              example: 3505059386211000
+            name:
+              type: string
+              example: Doe John
+          required:
+            - member_no
+            - name
+        qr_code:
+          type: string
+          example: eyJzdWIiOiJjYXR0bGUiLCJob3N0VXVpZCI6ImRiNWIwNDVmLTZjZmItNDBlMy00ZjkwLWEyNWQ5NTE1MjdjYyIsImtpZCI6ImRlZmF1bHQiLCJpc3MiOiJodHRwOlwvXC9j
+      required:
+        - nik
+        - full_name
+        - phone_number
+        - address
+        - dprt_coordinator
+        - qr_code
+    ResponseSaksiValidation:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 5
+        member_no:
+          type: string
+          example: 3505059386211000
+        nik:
+          type: string
+          example: 1234567890123456
+        full_name:
+          type: string
+          example: John Doe
+        phone_number:
+          type: string
+          example: +6281234567890
+        address:
+          type: string
+          example: Jl. Veteran No.10 Krajan Lumajang
+        dprt_coordinator:
+          type: object
+          properties:
+            member_no:
+              type: string
+              example: 3505059386211000
+            name:
+              type: string
+              example: Doe John
+          required:
+            - member_no
+            - name
+        selfie_image:
+          type: string
+          format: url
+          example: http://localhost:8555/saksi/validation/selfie/51_selfie.jpg
+        ktp_image:
+          type: string
+          format: url
+          example: http://localhost:8555/saksi/validation/ktp/51_ktp.jpg
+      required:
+        - id
+        - member_no
+        - nik
+        - full_name
+        - phone_number
+        - address
+        - dprt_coordinator
+        - selfie_image
+        - ktp_image
+    RequestCreateSaksi:
+      type: object
+      properties:
+        candidate_id:
+          type: integer
+          description: Saksi candidate ID
+        tps_no:
+          type: integer
+          description: TPS number
+      required:
+      - candidate_id
+      - tps_no
+    ResponseSaksiDPRT:
+      type: object
+      properties:
+        nik:
+          type: string
+          example: 1234567890123456
+        member_no:
+          type: string
+          example: 3505059386211000
+        phone_number:
+          type: string
+          example: +6281234567890
+        full_name:
+          type: string
+          example: John Doe
+        tps_no:
+          type: integer
+          example: 12
+        address:
+          type: string
+          example: Jl. Veteran No.10 Krajan Lumajang
+        member_image:
+          type: string
+          format: url
+          example: http://localhost:8555/member/image/51.jpg
+        selfie_image:
+          type: string
+          format: url
+          example: http://localhost:8555/saksi/validation/selfie/51_selfie.jpg
+        ktp_image:
+          type: string
+          format: url
+          example: http://localhost:8555/saksi/validation/ktp/51_ktp.jpg
+      required:
+        - nik
+        - member_no
+        - phone_number
+        - full_name
+        - tps_no
+        - address
+        - member_image
+        - selfie_image
+        - ktp_image
+    ResponseDPRT:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        member_no:
+          type: string
+          example: 3505059386211000
+        phone_number:
+          type: string
+          example: +6281234567890
+        nik:
+          type: string
+          example: 1234567890123456
+        full_name:
+          type: string
+          example: John Doe
+        member_image:
+          type: string
+          format: url
+          example: http://localhost:8555/member/image/51.jpg
+        provinsi:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 31
+            name:
+              type: string
+              example: DKI Jakarta
+          required:
+            - code
+            - name
+        kabupaten:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 71
+            name:
+              type: string
+              example: Jakarta Pusat
+          required:
+            - code
+            - name
+        kecamatan:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 6
+            name:
+              type: string
+              example: Menteng
+          required:
+            - code
+            - name
+        kelurahan:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 1004
+            name:
+              type: string
+              example: Gondangdia
+          required:
+            - code
+            - name
+      required:
+        - id
+        - member_no
+        - phone_number
+        - nik
+        - full_name
+        - member_image
+        - provinsi
+        - kabupaten
+        - kecamatan
+        - kelurahan
+    ResponseSaksi:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        member_no:
+          type: string
+          example: 3505059386211000
+        phone_number:
+          type: string
+          example: +6281234567890
+        full_name:
+          type: string
+          example: John Doe
+        tps_no:
+          type: integer
+          example: 12
+        member_image:
+          type: string
+          format: url
+          example: http://localhost:8555/member/image/51.jpg
+        selfie_image:
+          type: string
+          format: url
+          example: http://localhost:8555/saksi/validation/selfie/51_selfie.jpg
+        ktp_image:
+          type: string
+          format: url
+          example: http://localhost:8555/saksi/validation/ktp/51_ktp.jpg
+      required:
+        - id
+        - member_no
+        - phone_number
+        - full_name
+        - tps_no
+        - member_image
+        - selfie_image
+        - ktp_image
+    ResponseCreateSaksi:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 5
+        member_no:
+          type: string
+          example: 3505059386211000
+        tps_no:
+          type: integer
+          example: 51
+      required:
+      - id
+      - member_no
+      - tps_no
+    ResponseAuth:
+      type: object
+      properties:
+        member_no:
+          type: integer
+          example: 3505059386211000
+        nik:
+          type: string
+          example: 1234567890123456
+        full_name:
+          type: string
+          example: John Doe
+        role:
+          type: string
+          example: saksi
+          enum:
+            - saksi
+            - dprt
+        member_image:
+          type: string
+          format: url
+          example: http://localhost:8555/member/image/51.jpg
+        kecamatan:
+          type: string
+          example: Menteng
+        kelurahan:
+          type: string
+          example: Gondangdia
+        tps_no:
+          type: integer
+          example: 12
+        attended:
+          type: boolean
+          example: true
+        token:
+          type: string
+      required:
+        - member_no
+        - nik
+        - full_name
+        - role
+        - member_image
+        - kecamatan
+        - kelurahan
+        - token
+    RequestCreateSaksiAttendance:
+      type: object
+      properties:
+        selfie_image:
+          type: string
+          format: binary
+          description: Selfie image
+      required:
+        - selfie_image
+    ResponseSaksiAttendance:
+      type: object
+      properties:
+        full_name:
+          type: string
+          example: John Doe
+        phone_number:
+          type: string
+          example: +6281234567890
+        tps_no:
+          type: integer
+          example: 12
+        attend:
+          type: boolean
+          example: true
+        attendance_image:
+          type: string
+          format: url
+          example: http://localhost:8555/saksi/attendance/51.jpg
+      required:
+        - full_name
+        - phone_number
+        - tps_no
+        - attend
+    RequestCreateTPS:
+      type: object
+      properties:
+        tps_no:
+          type: integer
+          description: TPS number
+        prov_code:
+          type: integer
+          description: Provinsi code
+        kab_code:
+          type: integer
+          description: Kabupaten/kota code
+        kec_code:
+          type: integer
+          description: Kecamatan code
+        kel_code:
+          type: integer
+          description: Kelurahan/desa code
+      required:
+        - tps_no
+        - prov_code
+        - kab_code
+        - kec_code
+        - kel_code
+    RequestUpdateTPS:
+      type: object
+      properties:
+        tps_no:
+          type: integer
+          description: TPS number
+        prov_code:
+          type: integer
+          description: Provinsi code
+        kab_code:
+          type: integer
+          description: Kabupaten/kota code
+        kec_code:
+          type: integer
+          description: Kecamatan code
+        kel_code:
+          type: integer
+          description: Kelurahan/desa code
+    ResponseTPS:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        provinsi:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 31
+            name:
+              type: string
+              example: DKI Jakarta
+          required:
+            - code
+            - name
+        kabupaten:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 71
+            name:
+              type: string
+              example: Jakarta Pusat
+          required:
+            - code
+            - name
+        kecamatan:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 6
+            name:
+              type: string
+              example: Menteng
+          required:
+            - code
+            - name
+        kelurahan:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 1004
+            name:
+              type: string
+              example: Gondangdia
+          required:
+            - code
+            - name
+        tps_no:
+          type: integer
+          example: 12
+      required:
+        - id
+        - provinsi
+        - kabupaten
+        - kecamatan
+        - kelurahan
+        - tps_no
+    ResponseTPSDPRT:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 2
+        provinsi:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 31
+            name:
+              type: string
+              example: DKI Jakarta
+          required:
+            - code
+            - name
+        kabupaten:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 71
+            name:
+              type: string
+              example: Jakarta Pusat
+          required:
+            - code
+            - name
+        kecamatan:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 6
+            name:
+              type: string
+              example: Menteng
+          required:
+            - code
+            - name
+        kelurahan:
+          type: object
+          properties:
+            code:
+              type: integer
+              example: 1004
+            name:
+              type: string
+              example: Gondangdia
+          required:
+            - code
+            - name
+        tps_no:
+          type: integer
+          example: 12
+        saksi:
+          type: string
+          nullable: true
+          example: 3505059386211000
+      required:
+        - id
+        - provinsi
+        - kabupaten
+        - kecamatan
+        - kelurahan
+        - tps_no
+        - saksi
+    ResponseCompensation:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 54
+        full_name:
+          type: string
+          example: John Doe
+        member_image:
+          type: string
+          format: url
+          example: http://localhost:8555/member/image/51.jpg
+        tps_no:
+          type: integer
+          example: 12
+        document:
+          type: string
+          example: http://localhost:8555/saksi/document/51_selfie.jpg
+        document_status:
+          type: string
+          example: sent
+          enum:
+            - processing
+            - waiting
+            - sent
+        compensation:
+          type: boolean
+          example: true
+        refused_reason:
+          type: string
+          example: Refused because ...
+      required:
+        - id
+        - full_name
+        - member_image
+        - tps_no
+        - document_status
+        - compensation
+    RequestDocumentEvidence:
+      type: object
+      properties:
+        saksi_id:
+          type: integer
+          description: Saksi ID
+        document:
+          type: string
+          description: C1 document URL
+        compensation:
+          type: boolean
+          description: Give compensation
+        refused_reason:
+          type: string
+          description: Refused compensation reason (required if compensation is false)
+      required:
+        - saksi_id
+        - document
+        - compensation
+  responses:
+    Success:
+      description: Success
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Success
+    Created:
+      description: Created
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Created
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Bad request
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Unauthorized
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Forbidden
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Not found
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            type: string
+            example: Internal server error
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

@@ -1,0 +1,9 @@
+.vscode
+.DS_Store
+be-service-saksi
+be-service-saksi.exe
+saksi/delivery/http/openapi/openapi.yaml
+saksi/delivery/http/grpcdoc/grpc.proto
+config.yaml
+be-service-saksi.yaml
+temp
